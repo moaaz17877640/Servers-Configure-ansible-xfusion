@@ -1,0 +1,38 @@
+---
+- name: Extract and deploy devops.zip to app servers
+  hosts: stapp01, stapp02, stapp03
+  become: yes
+  tasks:
+    - name: Ensure target directory exists
+      file:
+        path: /opt/security/
+        state: directory
+        mode: '0777'
+
+    - name: Copy zip file from jump host to app servers
+      copy:
+        src: /usr/src/security/devops.zip
+        dest: /tmp/devops.zip
+        remote_src: no
+
+    - name: Unzip the archive
+      unarchive:
+        src: /tmp/devops.zip
+        dest: /opt/security/
+        remote_src: yes
+        mode: '0777'
+        owner: "{{ 
+          'tony' if inventory_hostname == 'stapp01' 
+          else 'steve' if inventory_hostname == 'stapp02' 
+          else 'banner' 
+        }}"
+        group: "{{ 
+          'tony' if inventory_hostname == 'stapp01' 
+          else 'steve' if inventory_hostname == 'stapp02' 
+          else 'banner' 
+        }}"
+
+    - name: Clean up temporary zip file
+      file:
+        path: /tmp/devops.zip
+        state: absent
