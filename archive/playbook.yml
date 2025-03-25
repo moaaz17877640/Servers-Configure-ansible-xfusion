@@ -1,0 +1,31 @@
+---
+- name: Archive and copy security directory
+  hosts: stapp01, stapp02, stapp03
+  become: yes
+  tasks:
+    - name: Ensure /opt/security/ directory exists
+      file:
+        path: /opt/security/
+        state: directory
+        mode: '0755'
+
+    - name: Create archive of /usr/src/security/
+      archive:
+        path: /usr/src/security/
+        dest: /opt/security/ecommerce.tar.gz
+        format: gz
+
+    - name: Set ownership for ecommerce.tar.gz
+      file:
+        path: /opt/security/ecommerce.tar.gz
+        owner: "{{ 
+          'tony' if inventory_hostname == 'stapp01' 
+          else 'steve' if inventory_hostname == 'stapp02' 
+          else 'banner' 
+        }}"
+        group: "{{ 
+          'tony' if inventory_hostname == 'stapp01' 
+          else 'steve' if inventory_hostname == 'stapp02' 
+          else 'banner' 
+        }}"
+        state: file
