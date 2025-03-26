@@ -9,12 +9,12 @@
 # The /var/www/html/index.html file's permissions should be 0655 on all app servers.
 
 ---
-- name: Install and configure httpd on app servers
-  hosts: stapp01, stapp02, stapp03
+- name: Install and configure HTTPD on app servers
+  hosts: all
   become: yes
   tasks:
     - name: Install httpd
-      yum:
+      package:
         name: httpd
         state: present
 
@@ -24,24 +24,16 @@
         state: started
         enabled: yes
 
-    - name: Ensure target directory exists
-      file:
-        path: /var/www/html/
-        state: directory
-        mode: '0755'
-
-    - name: Add content to /var/www/html/index.html
-      ansible.builtin.blockinfile:
+    - name: Add content to index.html
+      blockinfile:
         path: /var/www/html/index.html
-        create: yes
         block: |
           Welcome to XfusionCorp!
-          This is  Nautilus sample file, created using Ansible!
+          
+          This is Nautilus sample file, created using Ansible!
+          
           Please do not modify this file manually!
-
-    - name: Set ownership of /var/www/html/index.html
-      file:
-        path: /var/www/html/index.html
+        create: yes
         owner: apache
         group: apache
-        mode: '0655'
+        mode: '0744'
